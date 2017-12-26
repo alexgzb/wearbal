@@ -3,10 +3,14 @@
 # ~~~~
 
 # Default path will just redirect to the computer list
-GET     /                           controllers.HomeController.index
+GET     /old                        controllers.HomeController.index
+GET     /                           controllers.HomesController.index
+
+GET     /fromfyndiq                 controllers.PopulateFromFyndiqController.getProducts
 
 # Computers list (look at the default values for pagination parameters)
 GET     /computers                  controllers.HomeController.list(p:Int ?= 0, s:Int ?= 2, f ?= "")
+GET     /products                   controllers.HomesController.list(p:Int ?= 0, s:Int ?= 2, f ?= "")
 
 # Add computer
 GET     /computers/new              controllers.HomeController.create

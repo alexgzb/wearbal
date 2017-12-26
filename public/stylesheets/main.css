@@ -26,7 +26,16 @@ table.computers em {
     color: #aaa;
 }
 
+table.products em {
+    color: #aaa;
+}
+
 table.computers .col3, table.computers .col4 {
+    width: 10%;
+    min-width: 100px;
+}
+
+table.products .col3, table.products .col4 {
     width: 10%;
     min-width: 100px;
 }
@@ -37,6 +46,14 @@ table.computers .col5 {
 }
 
 table.computers .header a {
+}
+
+table.products .col5 {
+    width: 30%;
+    min-width: 300px;
+}
+
+table.products .header a {
 }
 
 #actions {

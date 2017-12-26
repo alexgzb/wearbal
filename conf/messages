@@ -1,3 +1,4 @@
 # Messages
 
 computers.list.title={0,choice,0#No computers|1#One computer|1<{0,number,integer} computers} found
+#products.list.title={0,choice,0#No products|1#One product|1<{0,number,integer} products} found
