@@ -7,17 +7,17 @@ import play.api.db.DBApi
 
 import scala.concurrent.Future
 
-case class Product(id: Option[Long],
+case class Product(id: Option[Long] = None,
                    name: String,
                    description: String,
                    sku: String,
-                   ean: String,
+                   ean: Option[String] = None,
                    numInStock: Int,
-                   purchasePrice: Double,
+                   purchasePrice: Option[Double] = None,
                    sellingPrice: Double,
                    rrp: Double,
-                   brand: String,
-                   companyId: Long)
+                   brand: Option[String] = None,
+                   companyId: Option[Long] = None)
 
 /**
   * Helper for pagination.
@@ -40,13 +40,13 @@ class ProductRepository @Inject()(dBApi: DBApi, fyndiqProductRepository: FyndiqP
         get[String]("product.name") ~
         get[String]("product.description") ~
         get[String]("product.sku") ~
-        get[String]("product.ean") ~
+        get[Option[String]]("product.ean") ~
         get[Int]("product.num_in_stock") ~
-        get[Double]("product.purchase_price") ~
+        get[Option[Double]]("product.purchase_price") ~
         get[Double]("product.selling_price") ~
         get[Double]("product.rrp") ~
-        get[String]("product.brand") ~
-        get[Long]("product.company_id") map {
+        get[Option[String]]("product.brand") ~
+        get[Option[Long]]("product.company_id") map {
         case id ~ name ~ description ~ sku ~ ean ~ numInStock ~ purchasePrice ~ sellingPrice ~ rrp ~ brand ~ companyId =>
         Product(id, name, description, sku, ean, numInStock, purchasePrice, sellingPrice, rrp, brand, companyId)
     }
@@ -136,8 +136,7 @@ class ProductRepository @Inject()(dBApi: DBApi, fyndiqProductRepository: FyndiqP
       SQL(
         """
           update product
-            set id = {id},
-            name = {name},
+            set name = {name},
             description = {description},
             sku = {sku},
             ean = {ean},
@@ -150,7 +149,6 @@ class ProductRepository @Inject()(dBApi: DBApi, fyndiqProductRepository: FyndiqP
           )
         """
       ).on(
-        'id -> product.id,
         'name -> product.name,
         'description -> product.description,
         'sku -> product.sku,
@@ -171,13 +169,12 @@ class ProductRepository @Inject()(dBApi: DBApi, fyndiqProductRepository: FyndiqP
     *
     * @param product The product values.
     */
-  def insert(product: Product, images: List[Image]): Future[Int] = Future {
+  def insert(product: Product): Future[Long] = Future {
     db.withConnection { implicit connection =>
       SQL(
         """
           insert into product values (
             (select next value for product_seq),
-            {id},
             {name},
             {description},
             {sku},
@@ -191,7 +188,6 @@ class ProductRepository @Inject()(dBApi: DBApi, fyndiqProductRepository: FyndiqP
           )
         """
       ).on(
-        'id -> product.id,
         'name -> product.name,
         'description -> product.description,
         'sku -> product.sku,
@@ -202,21 +198,27 @@ class ProductRepository @Inject()(dBApi: DBApi, fyndiqProductRepository: FyndiqP
         'rrp -> product.rrp,
         'brand -> product.brand,
         'company_id -> product.companyId
-      ).executeUpdate()
+      ).executeInsert(scalar[Long].single)
     }
   }(ec)
 
   /**
-    * Delete a product.
+    * Delete a product and the images belonging to the product
     *
     * @param id Id of the product to delete.
     */
   def delete(id: Long): Future[Int] = Future {
     db.withConnection { implicit connection =>
       SQL("delete from product where id = {id}").on('id -> id).executeUpdate()
+      SQL("delete from image where product_id = {id}").on('id -> id).executeUpdate()
     }
   }(ec)
 
 
+  def count(): Future[Int] = Future {
+    db.withConnection { implicit  connection =>
+      SQL("select count(*) from product").as(scalar[Int].single)
+    }
+  }(ec)
 
 }

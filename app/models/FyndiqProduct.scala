@@ -1,20 +1,22 @@
 package internal
 
-import play.api.libs.json.Json
+import models.VariationGroup
+import play.api.libs.json.{Json, OFormat}
 
-case class Produkt(description: String,
-                   id: Int,
-                   images: List[String],
-                   is_blocked_by_fyndiq: Boolean,
-                   item_no: String,
-                   moms_percent: Int,
-                   num_in_stock: Int,
-                   oldprice: String,
-                   price: String,
-                   resource_uri: String,
-                   state: String,
-                   title: String,
-                   url: String
+case class FyndiqProduct(description: String,
+                         id: Int,
+                         images: List[String],
+                         is_blocked_by_fyndiq: Boolean,
+                         item_no: String,
+                         moms_percent: Int,
+                         num_in_stock: Int,
+                         oldprice: String,
+                         price: String,
+                         resource_uri: String,
+                         state: String,
+                         title: String,
+                         url: String,
+                         variation_group: Option[List[VariationGroup]]
                  ) {
 
   override def toString: String = {
@@ -38,8 +40,8 @@ case class Produkt(description: String,
 //      s"\t\tUrl: $url\n\n"
 //  }
 }
-object Produkt {
-  implicit val produktReads = Json.format[Produkt]
+object FyndiqProduct {
+  implicit val produktReads: OFormat[FyndiqProduct] = Json.format[FyndiqProduct]
 //  implicit val objectReads: Reads[Product] = (
 //    (JsPath \ "description").read[String] and
 //    (JsPath \ "id").read[String] and

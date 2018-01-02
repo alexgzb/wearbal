@@ -2,7 +2,7 @@ package internal
 
 import play.api.libs.json.Json
 
-case class FyndiqProductsResponse(meta: Meta, objects: List[Produkt])
+case class FyndiqProductsResponse(meta: Meta, objects: List[FyndiqProduct])
 
 object FyndiqProductsResponse {
   implicit val fyndiqProductsResponseReads = Json.reads[FyndiqProductsResponse]

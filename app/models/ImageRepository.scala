@@ -38,14 +38,14 @@ class ImageRepository @Inject()(dbapi: DBApi)(implicit ec: DatabaseExecutionCont
     }
   }(ec)
 
-  def insert(image: Image) = Future {
+  def insert(image: Image): Future[Long] = Future {
     db.withConnection { implicit connection =>
       SQL(
         """
            insert into image values (
             (select next value for image_seq), {product_id}, {url}
            )
-        """.stripMargin).on('product_id -> image.productId, 'url -> image.url)
+        """.stripMargin).on('product_id -> image.productId, 'url -> image.url).executeInsert(scalar[Long].single)
     }
   }
 
