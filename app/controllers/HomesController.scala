@@ -32,19 +32,18 @@ class HomesController @Inject()(productService: ProductRepository,
   val productForm = Form(
     mapping(
       "id" -> ignored(None: Option[Long]),
+      "productId" -> longNumber,
       "fyndiq_id" -> longNumber,
-      "description" -> nonEmptyText,
-      "isBlockedByFyndiq" -> optional(boolean),
-      "itemNo" -> nonEmptyText,
-      "momsPercent" -> number,
-      "numInStock" -> number,
-      "oldprice" -> nonEmptyText,
-      "price" -> nonEmptyText,
-      "resourceUri" -> nonEmptyText,
-      "state" -> nonEmptyText,
       "title" -> nonEmptyText,
+      "description" -> nonEmptyText,
+      "momsPercent" -> number,
+      "isBlockedByFyndiq" -> boolean,
+      "state" -> nonEmptyText,
+      "price" -> nonEmptyText,
+      "oldprice" -> nonEmptyText,
+      "resourceUri" -> nonEmptyText,
       "url" -> nonEmptyText
-    )(FyndiqProduct.apply)(FyndiqProduct.unapply)
+    )(FyndiqProductTable.apply)(FyndiqProductTable.unapply)
   )
 
   // -- Actions

@@ -1,4 +1,4 @@
-  package models
+package models
 
 import javax.inject.Inject
 
@@ -8,19 +8,18 @@ import play.api.db.DBApi
 
 import scala.concurrent.Future
 
-case class FyndiqProduct(id: Option[Long] = None,
-                         fyndiqId: Long,
-                         description: String,
-                         isBlockedByFyndiq: Option[Boolean],
-                         itemNo: String,
-                         fyndiqMomsPercent: Int = 25,
-                         numInStock: Int,
-                         fyndiqOldprice: String,
-                         fyndiqPrice: String,
-                         fyndiqResourceUri: String,
-                         fyndiqState: String,
-                         title: String,
-                         fyndiqUrl: String)
+case class FyndiqProductTable(id: Option[Long] = None,
+                              productId: Long,
+                              fyndiqId: Long,
+                              title: String,
+                              description: String,
+                              fyndiqMomsPercent: Int = 25,
+                              isBlockedByFyndiq: Boolean,
+                              fyndiqState: String,
+                              fyndiqPrice: String,
+                              fyndiqOldprice: String,
+                              fyndiqResourceUri: String,
+                              fyndiqUrl: String)
 
 /**
   * Helper for pagination.
@@ -42,21 +41,20 @@ class FyndiqProductRepository @Inject()(dbapi: DBApi, imageRepository: ImageRepo
     * Parse a Product from a ResultSet
     */
   private val simple = {
-    get[Option[Long]]("fyndiq_product.id") ~
+    get[Option[Long]]("id") ~
+      get[Long]("fyndiq_product.id") ~
       get[Long]("fyndiq_product.fyndiq_id") ~
-      get[String]("fyndiq_product.description") ~
-      get[Option[Boolean]]("fyndiq_product.is_blocked_by_fyndiq") ~
-      get[String]("fyndiq_product.item_no") ~
-      get[Int]("fyndiq_product.moms_percent") ~
-      get[Int]("fyndiq_product.num_in_stock") ~
-      get[String]("fyndiq_product.oldprice") ~
-      get[String]("fyndiq_product.price") ~
-      get[String]("fyndiq_product.resource_uri") ~
-      get[String]("fyndiq_product.state") ~
       get[String]("fyndiq_product.title") ~
+      get[String]("fyndiq_product.description") ~
+      get[Int]("fyndiq_product.moms_percent") ~
+      get[Boolean]("fyndiq_product.is_blocked_by_fyndiq") ~
+      get[String]("fyndiq_product.state") ~
+      get[String]("fyndiq_product.price") ~
+      get[String]("fyndiq_product.oldprice") ~
+      get[String]("fyndiq_product.resource_uri") ~
       get[String]("fyndiq_product.url") map {
-      case id ~ fyndiqId ~ description ~ isBlockedByFyndiq ~ itemNo ~ momsPercent ~ numInStock ~ oldprice ~ price ~ resourceUri ~ state ~ title ~ url =>
-    FyndiqProduct(id, fyndiqId, description, isBlockedByFyndiq, itemNo, momsPercent, numInStock, oldprice, price, resourceUri, state, title, url)
+      case id ~ productId ~ fyndiqId ~ title ~ description ~ momsPercent ~ isBlockedByFyndiq ~ state ~ price ~ oldprice ~ resourceUri ~ url =>
+        FyndiqProductTable(id, productId, fyndiqId, title, description, momsPercent, isBlockedByFyndiq, state, price, oldprice, resourceUri, url)
     }
   }
 
@@ -64,7 +62,7 @@ class FyndiqProductRepository @Inject()(dbapi: DBApi, imageRepository: ImageRepo
   /**
     * Retrieve a computer from the id.
     */
-  def findById(id: Long): Future[Option[FyndiqProduct]] = Future {
+  def findById(id: Long): Future[Option[FyndiqProductTable]] = Future {
     db.withConnection { implicit connection =>
       SQL(
         """
@@ -78,16 +76,17 @@ class FyndiqProductRepository @Inject()(dbapi: DBApi, imageRepository: ImageRepo
 
 
   /**
-    * Update a product.
+    * Update a fyndiq_product.
     *
     * @param product The product values.
     */
-  def update(product: FyndiqProduct) = Future {
+  def update(product: FyndiqProductTable) = Future {
     db.withConnection { implicit connection =>
       SQL(
         """
-          update product
+          update fyndiq_product
             set fyndiq_id = {fyndiq_id},
+            title = {title},
             description = {description},
             is_blocked_by_fyndiq = {is_blocked_by_fyndiq},
             item_no = {item_no},
@@ -97,7 +96,6 @@ class FyndiqProductRepository @Inject()(dbapi: DBApi, imageRepository: ImageRepo
             price = {price},
             resource_uri = {resource_uri},
             state = {state},
-            title = {title},
             url = {url}
           )
         """
@@ -105,9 +103,7 @@ class FyndiqProductRepository @Inject()(dbapi: DBApi, imageRepository: ImageRepo
         'fyndiq_id -> product.fyndiqId,
         'description -> product.description,
         'is_blocked_by_fyndiq -> product.isBlockedByFyndiq,
-        'item_no -> product.itemNo,
         'moms_percent -> product.fyndiqMomsPercent,
-        'num_in_stock -> product.numInStock,
         'oldprice -> product.fyndiqOldprice,
         'price -> product.fyndiqPrice,
         'resource_uri -> product.fyndiqResourceUri,
@@ -119,34 +115,42 @@ class FyndiqProductRepository @Inject()(dbapi: DBApi, imageRepository: ImageRepo
   }(ec)
 
   /**
-    * Insert a new product.
+    * Insert a new fyndiq_product.
     *
     * @param product The product values.
     */
-  def insert(product: FyndiqProduct, images: List[Image]) = Future {
+  def insert(product: FyndiqProductTable): Future[Long] = Future {
     db.withConnection { implicit connection =>
       SQL(
         """
-          insert into product values (
-            (select next value for product_seq),
-            {fyndiq_id}, {description}, {is_blocked_by_fyndiq}, {item_no}, {moms_percent}, {num_in_stock}, {oldprice}, {price}, {resource_uri}, {state}, {title}, {url}
+          insert into fyndiq_product values (
+            (select next value for fyndiq_product_seq),
+            {productId},
+            {fyndiq_id},
+            {title},
+            {description},
+            {moms_percent},
+            {is_blocked_by_fyndiq},
+            {state},
+            {price},
+            {oldprice},
+            {url},
+            {resource_uri}
           )
         """
       ).on(
+        'productId -> product.productId,
         'fyndiq_id -> product.fyndiqId,
-        'description -> product.description,
-        'is_blocked_by_fyndiq -> product.isBlockedByFyndiq,
-        'item_no -> product.itemNo,
-        'moms_percent -> product.fyndiqMomsPercent,
-        'num_in_stock -> product.numInStock,
-        'oldprice -> product.fyndiqOldprice,
-        'price -> product.fyndiqPrice,
-        'resource_uri -> product.fyndiqResourceUri,
-        'state -> product.fyndiqState,
         'title -> product.title,
-        'url -> product.fyndiqUrl
-      ).executeUpdate()
+        'description -> product.description,
+        'moms_percent -> product.fyndiqMomsPercent,
+        'is_blocked_by_fyndiq -> product.isBlockedByFyndiq,
+        'state -> product.fyndiqState,
+        'price -> product.fyndiqPrice,
+        'oldprice -> product.fyndiqOldprice,
+        'url -> product.fyndiqUrl,
+        'resource_uri -> product.fyndiqResourceUri
+      ).executeInsert(scalar[Long].single)
     }
   }(ec)
-
 }

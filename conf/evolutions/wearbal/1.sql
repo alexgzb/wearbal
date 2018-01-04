@@ -13,7 +13,7 @@ create table company (
 CREATE TABLE product (
   id BIGINT(20) NOT NULL AUTO_INCREMENT,
   name varchar(255) NOT NULL,
-  description varchar(500) NOT NULL,
+  description varchar NOT NULL,
   sku varchar(255) NOT NULL,
   ean varchar(255),
   num_in_stock INTEGER NOT NULL,
@@ -27,8 +27,10 @@ CREATE TABLE product (
 
 CREATE TABLE fyndiq_product (
   id BIGINT(20) NOT NULL AUTO_INCREMENT,
-  fyndiq_id BIGINT(20),
   product_id BIGINT(20),
+  fyndiq_id BIGINT(20),
+  title varchar(255) NOT NULL,
+  description varchar NOT NULL,
   moms_percent INTEGER NOT NULL,
   is_blocked_by_fyndiq Boolean NOT NULL,
   product_state varchar(255) NOT NULL,
@@ -65,6 +67,7 @@ drop table if exists Product, Image, fyndiq_product, company;
 
 SET REFERENTIAL_INTEGRITY TRUE;
 
+drop sequence if exists image_seq;
 drop sequence if exists company_seq;
 drop sequence if exists product_seq;
 drop sequence if exists fyndiq_product_seq;
