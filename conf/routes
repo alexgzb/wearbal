@@ -6,7 +6,11 @@
 GET     /old                        controllers.HomeController.index
 GET     /                           controllers.HomesController.index
 
+GET     /javascriptRoutes           controllers.Application.javascriptRoutes
+
 GET     /fromfyndiq                 controllers.PopulateFromFyndiqController.getProducts
+
+GET     /orders/:orderNr            controllers.OrderController.printOrder(orderNr:String)
 
 # Computers list (look at the default values for pagination parameters)
 GET     /computers                  controllers.HomeController.list(p:Int ?= 0, s:Int ?= 2, f ?= "")
