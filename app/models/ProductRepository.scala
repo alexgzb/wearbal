@@ -86,9 +86,9 @@ class ProductRepository @Inject()(dBApi: DBApi, fyndiqProductRepository: FyndiqP
     * @param filter   Filter applied on the title column
     */
   def list(page: Int = 0,
-           pageSize: Int = 10,
+           pageSize: Int = 100,
            orderBy: Int = 1,
-           filter: String = "%"): Future[Page[Product]] = Future {
+           filter: String = "%"): Future[Page[(Product, List[Image])]] = Future {
 
     val offest = pageSize * page
 
@@ -96,20 +96,23 @@ class ProductRepository @Inject()(dBApi: DBApi, fyndiqProductRepository: FyndiqP
 
       val products = SQL(
         """
-           select * from product p
+          select * from product p
           left join image i on p.id = i.product_id
           left join fyndiq_product fp on p.id = fp.product_id
           left join company c on c.id = p.company_id
-          where p.name like {filter}
+          and p.id in (SELECT id from product where p.name like {filter} order by id limit {pageSize} offset {offset})
           order by {orderBy} nulls last
-          limit {pageSize} offset {offset}
         """
       ).on(
         'pageSize -> pageSize,
         'offset -> offest,
         'filter -> filter,
         'orderBy -> orderBy
-      ).as(simple.*)
+      ).as(withImage.*)
+        .groupBy(_._1)
+        .mapValues(_.map(_._2).flatten)
+        .toList
+
 
       val totalRows = SQL(
         """

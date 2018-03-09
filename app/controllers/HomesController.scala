@@ -64,8 +64,7 @@ class HomesController @Inject()(productService: ProductRepository,
     */
   def list(page: Int, orderBy: Int, filter: String) = Action.async { implicit request =>
     productService.list(page = page, orderBy = orderBy, filter = "%" + filter + "%").map { page =>
-      //Ok(html.lists(page, orderBy, filter))
-      Ok
+      Ok(html.listNew(page, orderBy, filter))
     }
   }
 
