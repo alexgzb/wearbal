@@ -8,6 +8,8 @@ scalaVersion := "2.12.4"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
+enablePlugins(DockerPlugin)
+
 libraryDependencies += guice
 libraryDependencies += jdbc
 libraryDependencies += evolutions
