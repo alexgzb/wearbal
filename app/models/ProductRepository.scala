@@ -88,19 +88,22 @@ class ProductRepository @Inject()(dBApi: DBApi, fyndiqProductRepository: FyndiqP
   def list(page: Int = 0,
            pageSize: Int = 100,
            orderBy: Int = 1,
-           filter: String = "%"): Future[Page[(Product, List[Image])]] = Future {
+           filter: String = "%",
+           inStockFilter: Boolean = true): Future[Page[(Product, List[Image])]] = Future {
 
     val offest = pageSize * page
 
     db.withConnection { implicit connection =>
 
       val products = SQL(
-        """
+        s"""
           select * from product p
           left join image i on p.id = i.product_id
           left join fyndiq_product fp on p.id = fp.product_id
           left join company c on c.id = p.company_id
-          and p.id in (SELECT id from product where p.name like {filter} order by id limit {pageSize} offset {offset})
+          where p.name like {filter}
+          ${if (inStockFilter) "and p.num_in_stock > 0" else ""}
+          and p.id in (SELECT id from product where p.name like {filter} order by id)
           order by {orderBy} nulls last
         """
       ).on(
@@ -110,7 +113,8 @@ class ProductRepository @Inject()(dBApi: DBApi, fyndiqProductRepository: FyndiqP
         'orderBy -> orderBy
       ).as(withImage.*)
         .groupBy(_._1)
-        .mapValues(_.map(_._2).flatten)
+        .mapValues(_.flatMap(_._2))
+        .slice(offest, offest + pageSize)
         .toList
 
 
