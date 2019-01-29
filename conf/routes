@@ -14,7 +14,7 @@ GET     /orders/:orderNr            controllers.OrderController.printOrder(order
 
 # Computers list (look at the default values for pagination parameters)
 GET     /computers                  controllers.HomeController.list(p:Int ?= 0, s:Int ?= 2, f ?= "")
-GET     /products                   controllers.HomesController.list(p:Int ?= 0, s:Int ?= 2, f ?= "", inStockFilter:Boolean ?= false )
+GET     /products                   controllers.HomesController.list(p:Int ?= 0, s:Int ?= 2, f ?= "")
 
 # Add computer
 GET     /computers/new              controllers.HomeController.create

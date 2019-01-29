@@ -62,8 +62,8 @@ class HomesController @Inject()(productService: ProductRepository,
     * @param orderBy Column to be sorted
     * @param filter  Filter applied on product names
     */
-  def list(page: Int, orderBy: Int, filter: String, inStockFilter: Boolean) = Action.async { implicit request =>
-    productService.list(page = page, orderBy = orderBy, filter = s"%$filter%", inStockFilter = inStockFilter).map { page =>
+  def list(page: Int, orderBy: Int, filter: String) = Action.async { implicit request =>
+    productService.list(page = page, orderBy = orderBy, filter = s"%$filter%").map { page =>
       Ok(html.listNew(page, orderBy, filter))
     }
   }
